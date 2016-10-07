@@ -74,7 +74,6 @@ class MessageController: UITableViewController, UISearchBarDelegate {
     
     func handleNewChat() {
         let NewChat = NewMessageController()
-        NewChat.messageController = self
         let NewController = UINavigationController(rootViewController: NewChat)
         present(NewController, animated: true, completion: nil)
     }

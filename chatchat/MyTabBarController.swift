@@ -22,9 +22,10 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
         checkIfheUserIsLogged()
     }
 
+    
     func handleNewChat() {
-        let addElements = AddElementViewController()
-        let NewController = UINavigationController(rootViewController: addElements)
+        let NewChat = AddElementViewController()
+        let NewController = UINavigationController(rootViewController: NewChat)
         present(NewController, animated: true, completion: nil)
     }
     
@@ -85,6 +86,12 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
         containerView.centerXAnchor.constraint(equalTo: titleView.centerXAnchor).isActive = true
         containerView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor).isActive = true
         self.navigationItem.titleView = titleView
+        titleView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleChat)))
+    }
+    
+    func handleChat() {
+        let chatLogController = ChatViewController(collectionViewLayout: UICollectionViewFlowLayout())
+        navigationController?.pushViewController(chatLogController, animated: true)
     }
     
     func handleout() {
@@ -106,7 +113,6 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
         let tabOneBarItem = UITabBarItem(title: "List", image: UIImage(named: "Document-1"), selectedImage: UIImage(named: "Document-1"))
         
         tabOne.tabBarItem = tabOneBarItem
-        
         
         // Create Tab two
         let tabTwo = NewMessageController()

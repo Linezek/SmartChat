@@ -29,6 +29,7 @@ class NewMessageController: UITableViewController {
         FIRDatabase.database().reference().child("users").observe(.childAdded, with: {(snapshot) in
             if let dictionnary = snapshot.value as? [String: NSObject] {
                 let user = User()
+                user.id = snapshot.key
                 print(snapshot)
                 user.setValuesForKeys(dictionnary)
                 self.users.append(user)
@@ -58,12 +59,14 @@ class NewMessageController: UITableViewController {
         return cell
     }
     
-    var messageController: MessageController?
+    var MyTarBarCtrl: MyTabBarController?
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let myVIew = ChatViewController()
-        let newController = UINavigationController(rootViewController: myVIew)
-        present(newController, animated: true, completion: nil)
+        
+        let user = self.users[indexPath.row]
+        let chatLogController = ChatViewController(collectionViewLayout: UICollectionViewFlowLayout())
+        chatLogController.user = user
+        navigationController?.pushViewController(chatLogController, animated: true)
     }
 }
 
