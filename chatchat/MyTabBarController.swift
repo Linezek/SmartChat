@@ -22,10 +22,9 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
         checkIfheUserIsLogged()
     }
 
-    
     func handleNewChat() {
-        let NewChat = AddElementViewController()
-        let NewController = UINavigationController(rootViewController: NewChat)
+        let addElements = AddElementViewController()
+        let NewController = UINavigationController(rootViewController: addElements)
         present(NewController, animated: true, completion: nil)
     }
     
@@ -90,6 +89,7 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
     }
     
     func handleChat() {
+        print(123)
         let chatLogController = ChatViewController(collectionViewLayout: UICollectionViewFlowLayout())
         navigationController?.pushViewController(chatLogController, animated: true)
     }
@@ -109,18 +109,27 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
         super.viewWillAppear(animated)
         
         // Create Tab one
-        let tabOne = MessageController()
+        let tabOne = ContactTableViewController()
         let tabOneBarItem = UITabBarItem(title: "List", image: UIImage(named: "Document-1"), selectedImage: UIImage(named: "Document-1"))
         
         tabOne.tabBarItem = tabOneBarItem
         
+        
         // Create Tab two
-        let tabTwo = NewMessageController()
+        let tabTwo = MessageController()
         let tabTwoBarItem2 = UITabBarItem(title: "Chat", image: UIImage(named: "SpeechBubble3"), selectedImage: UIImage(named: "SpeechBubble3"))
         
         tabTwo.tabBarItem = tabTwoBarItem2
         
-        self.viewControllers = [tabOne, tabTwo]
+        
+        //Create Tab3
+        
+        let tabThree = NewMessageController()
+        let tabThreeBarItem3 = UITabBarItem(title: "Contact", image: UIImage(named: "Contacts2"), selectedImage: UIImage(named: "Contacts2"))
+        
+        tabThree.tabBarItem = tabThreeBarItem3
+        
+        self.viewControllers = [tabOne, tabTwo, tabThree]
     }
     func tabBarController(tabBarController: UITabBarController, didSelectViewController viewController: UIViewController) {
         print("Selected \(viewController.title!)")

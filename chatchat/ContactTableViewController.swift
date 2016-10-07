@@ -1,15 +1,15 @@
 //
-//  ViewController.swift
+//  ContactTableViewController.swift
 //  chatchat
 //
-//  Created by Antoine Galpin on 14/09/2016.
+//  Created by Antoine Galpin on 07/10/2016.
 //  Copyright © 2016 Antoine Galpin. All rights reserved.
 //
 
 import UIKit
 import Firebase
 
-class MessageController: UITableViewController, UISearchBarDelegate {
+class ContactTableViewController: UITableViewController, UISearchBarDelegate {
     
     let cellId = "cellId"
     var users = [User]()
@@ -50,26 +50,25 @@ class MessageController: UITableViewController, UISearchBarDelegate {
         searchBar.delegate = self
         
         let image = UIImage(named: "SpeechBubble3")
-        tableView.register(UserCellList.self, forCellReuseIdentifier: cellId)
+        tableView.register(UserCellListContact.self, forCellReuseIdentifier: cellId)
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleNewChat))
         fetchUser()
-        observeMessage()
+        observeList()
     }
     
-    var messages = [Message]()
+    var allItems = [ItemClass]()
     
-    func observeMessage() {
-        let ref = FIRDatabase.database().reference().child("messages")
+    func observeList() {
+        let ref = FIRDatabase.database().reference().child("items")
         ref.observe(.childAdded, with: { (snapshot) in
             
-            print(snapshot)
             if let dictionary = snapshot.value as? [String: NSObject] {
-                let message = Message()
-                message.setValuesForKeys(dictionary)
-                self.messages.append(message)
+                let item = ItemClass()
+                item.id = snapshot.key
+                item.setValuesForKeys(dictionary)
+                self.allItems.append(item)
                 self.tableView.reloadData()
-                print(message.text)
-            
+                print(item.id)
             }
             }, withCancel: nil)
     }
@@ -106,26 +105,31 @@ class MessageController: UITableViewController, UISearchBarDelegate {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return messages.count
+        return allItems.count
     }
     
     
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
-        let message = messages[indexPath.row]
-        cell.textLabel?.text = message.fromId
-        cell.detailTextLabel?.text = message.text
+        let items = allItems[indexPath.row]
+        cell.textLabel?.text = items.title
+        cell.detailTextLabel?.text = items.desc
         return cell
     }
     
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        
+        self.allItems.remove(at: indexPath.row)
+        self.tableView.deleteRows(at: [indexPath], with: .automatic)
+    }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("testt")
     }
 }
 
-class UserCellList: UITableViewCell {
+class UserCellListContact: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()

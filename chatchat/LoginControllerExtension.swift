@@ -85,7 +85,7 @@ extension LoginController: UIImagePickerControllerDelegate, UINavigationControll
             self.MytabBarController?.navigationItem.title = data["name"] as! String?
             let user = User()
             user.setValuesForKeys(data)
-            self.MytabBarController?.setupNavBarWithUser(User: user)
+           // self.MytabBarController?.setupNavBarWithUser(User: user)
             self.setupSpinnerLoadingStop()
             self.dismiss(animated: true, completion: nil)
         })
