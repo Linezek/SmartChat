@@ -50,13 +50,49 @@ class MessageController: UITableViewController, UISearchBarDelegate {
         searchBar.delegate = self
         
         let image = UIImage(named: "SpeechBubble3")
-        tableView.register(UserCellList.self, forCellReuseIdentifier: cellId)
+        tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleNewChat))
         fetchUser()
-        observeMessage()
+       // observeMessage()
+        messages.removeAll()
+        messageDictionnary.removeAll()
+        tableView.reloadData()
+        observeUserMessages()
+        //observeUserMessages()
+    }
+    
+    func observeUserMessages() {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        let ref = FIRDatabase.database().reference().child("user-messages").child(uid)
+        ref.observe(.childAdded, with: { (snapshot) in
+            print(snapshot)
+            let messageID = snapshot.key
+            let referenceMessage = FIRDatabase.database().reference().child("messages").child(messageID)
+            referenceMessage.observeSingleEvent(of: .value, with: { (snapshot) in
+                print(snapshot)
+                if let dictionary = snapshot.value as? [String: NSObject] {
+                    let message = Message()
+                    message.setValuesForKeys(dictionary)
+                    if let toid = message.toid {
+                        self.messageDictionnary[toid] = message
+                        self.messages = Array(self.messageDictionnary.values)
+                        self.messages.sort(by: { (message1, message2) -> Bool in
+                            return (message1.timestamp?.intValue)! > (message2.timestamp?.intValue)!
+                        })
+                    }
+                    
+                    self.tableView.reloadData()
+                    print(message.text)
+                    
+                }
+                }, withCancel: nil)
+            }, withCancel: nil)
     }
     
     var messages = [Message]()
+    var messageDictionnary = [String: Message]()
     
     func observeMessage() {
         let ref = FIRDatabase.database().reference().child("messages")
@@ -66,7 +102,15 @@ class MessageController: UITableViewController, UISearchBarDelegate {
             if let dictionary = snapshot.value as? [String: NSObject] {
                 let message = Message()
                 message.setValuesForKeys(dictionary)
-                self.messages.append(message)
+      //          self.messages.append(message)
+                if let toid = message.toid {
+                    self.messageDictionnary[toid] = message
+                    self.messages = Array(self.messageDictionnary.values)
+                    self.messages.sort(by: { (message1, message2) -> Bool in
+                        return (message1.timestamp?.intValue)! > (message2.timestamp?.intValue)!
+                    })
+                }
+                
                 self.tableView.reloadData()
                 print(message.text)
             
@@ -112,32 +156,60 @@ class MessageController: UITableViewController, UISearchBarDelegate {
     
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! UserCell
         let message = messages[indexPath.row]
-        cell.textLabel?.text = message.fromId
+        if let toid = message.chatPartnerId() {
+            let ref = FIRDatabase.database().reference().child("users").child(toid)
+            ref.observe(.value, with: { (snapshot) in
+                if let dictionary = snapshot.value as? [String: AnyObject] {
+                    cell.textLabel?.text = dictionary["name"] as? String
+                    if let profileImageUrl = dictionary["profileImage"] as? String {
+                        cell.profileImageView.loadImageUsingCache(urlString: profileImageUrl)
+                    }
+                }
+            }, withCancel: nil)
+        }
+        
         cell.detailTextLabel?.text = message.text
+        if let seconds = message.timestamp?.doubleValue {
+            let timestampDate = NSDate(timeIntervalSince1970: seconds)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "hh:mm:ss a"
+            cell.timelabel.text = dateFormatter.string(from: timestampDate as Date)
+        }
         return cell
     }
     
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 72
+    }
+    
+    func showChatController(user: User) {
+        let chatLogController = ChatViewController(collectionViewLayout: UICollectionViewFlowLayout())
+        chatLogController.user = user
+        navigationController?.pushViewController(chatLogController, animated: true)
+    }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("testt")
-    }
-}
-
-class UserCellList: UITableViewCell {
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-    }
-    
-    
-    override init(style:UITableViewCellStyle, reuseIdentifier: String?) {
-        super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
+        let message = messages[indexPath.row]
+        print(message.text)
         
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("Fatal error (inCode) from UserCell")
+        guard let chatPartnerId = message.chatPartnerId() else {
+            return
+        }
+        
+        let ref = FIRDatabase.database().reference().child("users").child(chatPartnerId)
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let dictionary = snapshot.value as? [String: AnyObject] else {
+                return
+            }
+            
+            let users = User()
+            users.setValuesForKeys(dictionary)
+            users.id = chatPartnerId
+            self.showChatController(user: users)
+            }, withCancel: nil)
+        
+       // showChatController(user: <#T##User#>)
     }
 }

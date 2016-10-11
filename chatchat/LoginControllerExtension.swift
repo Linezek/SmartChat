@@ -74,7 +74,7 @@ extension LoginController: UIImagePickerControllerDelegate, UINavigationControll
     }
     
     private func registerUserInToDataBase(uid: String, data: [String: AnyObject]) {
-        let ref = FIRDatabase.database().reference(fromURL: "https://todolistfirebase-fbea6.firebaseio.com/")
+        let ref = FIRDatabase.database().reference()
         let userReference = ref.child("users").child(uid)
         userReference.updateChildValues(data, withCompletionBlock: { (error, ref) in
             if error != nil {

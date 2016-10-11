@@ -9,9 +9,11 @@
 import UIKit
 import Firebase
 
-class ChatViewController: UICollectionViewController, UITextFieldDelegate {
+class ChatViewController: UICollectionViewController, UITextFieldDelegate, UICollectionViewDelegateFlowLayout {
 
     var user: User?
+    var messages = [Message]()
+    let CellId = "cellId"
     
     lazy var inputTextField: UITextField = {
         let TextField = UITextField()
@@ -21,14 +23,57 @@ class ChatViewController: UICollectionViewController, UITextFieldDelegate {
         return TextField
     }()
     
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        collectionView?.alwaysBounceVertical = true
         navigationItem.title = user?.name
         collectionView?.backgroundColor = UIColor.white
+        collectionView?.register(ChatMessageCell.self, forCellWithReuseIdentifier: CellId)
         setupInputContainer()
+        observeMessages()
         // Do any additional setup after loading the view.
     }
+    
+    func observeMessages() {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        let userMessagesRef = FIRDatabase.database().reference().child("user-messages").child(uid)
+        userMessagesRef.observe(.childAdded, with: { (snapshot) in
+            let messageId = snapshot.key
+            let messagesRef = FIRDatabase.database().reference().child("messages").child(messageId)
+            messagesRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                guard let dictionary = snapshot.value as? [String: AnyObject] else {
+                    return
+                }
+                let message = Message()
+                message.setValuesForKeys(dictionary)
+                if message.chatPartnerId() == self.user?.id {
+                    self.messages.append(message)
+                    self.collectionView?.reloadData()
+                }
+                }, withCancel: nil)
+            }, withCancel: nil)
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CellId, for: indexPath) as! ChatMessageCell
+        let message = messages[indexPath.row]
+        cell.textView.text = message.text
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.width, height: 80)
+    }
+   
     
     func setupInputContainer() {
         let container = UIView()
@@ -74,9 +119,22 @@ class ChatViewController: UICollectionViewController, UITextFieldDelegate {
         let ref = FIRDatabase.database().reference().child("messages")
         let childref = ref.childByAutoId()
         let toId = user!.id!
+        let timestamp = Int(NSDate().timeIntervalSince1970)
         let fromId = FIRAuth.auth()!.currentUser!.uid
-        let values = ["text": inputTextField.text!, "toid": toId, "fromId": fromId]
-        childref.updateChildValues(values)
+        let values = ["text": inputTextField.text!, "toid": toId, "fromId": fromId, "timestamp": timestamp] as [String : Any]
+       // childref.updateChildValues(values)
+        childref.updateChildValues(values) { (error, ref) in
+            if error != nil {
+                print(error)
+                return
+            }
+            let userMessageDatabase = FIRDatabase.database().reference().child("user-messages").child(fromId)
+            let messageId = childref.key
+            userMessageDatabase.updateChildValues([messageId: 1])
+            
+            let recipientUserMessageRef = FIRDatabase.database().reference().child("user-messages").child(toId)
+            recipientUserMessageRef.updateChildValues([messageId: 1])
+        }
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
