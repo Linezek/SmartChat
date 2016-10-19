@@ -68,55 +68,43 @@ class MessageController: UITableViewController, UISearchBarDelegate {
         let ref = FIRDatabase.database().reference().child("user-messages").child(uid)
         ref.observe(.childAdded, with: { (snapshot) in
             print(snapshot)
-            let messageID = snapshot.key
-            let referenceMessage = FIRDatabase.database().reference().child("messages").child(messageID)
-            referenceMessage.observeSingleEvent(of: .value, with: { (snapshot) in
-                print(snapshot)
-                if let dictionary = snapshot.value as? [String: NSObject] {
-                    let message = Message()
-                    message.setValuesForKeys(dictionary)
-                    if let toid = message.toid {
-                        self.messageDictionnary[toid] = message
-                        self.messages = Array(self.messageDictionnary.values)
-                        self.messages.sort(by: { (message1, message2) -> Bool in
-                            return (message1.timestamp?.intValue)! > (message2.timestamp?.intValue)!
-                        })
+            let userId = snapshot.key
+            FIRDatabase.database().reference().child("user-messages").child(uid).child(userId).observe(.childAdded, with: { (snapshot) in
+                let messageId = snapshot.key
+                let referenceMessage = FIRDatabase.database().reference().child("messages").child(messageId)
+                referenceMessage.observeSingleEvent(of: .value, with: { (snapshot) in
+                    print(snapshot)
+                    if let dictionary = snapshot.value as? [String: NSObject] {
+                        let message = Message()
+                        message.setValuesForKeys(dictionary)
+                        if let chatPartnerId = message.chatPartnerId() {
+                            self.messageDictionnary[chatPartnerId] = message
+                        }
+                        self.attemptToReloadData()     
                     }
-                    
-                    self.tableView.reloadData()
-                    print(message.text)
-                    
-                }
+                    }, withCancel: nil)
                 }, withCancel: nil)
             }, withCancel: nil)
     }
     
+    
+    private func attemptToReloadData() {
+        self.messages = Array(self.messageDictionnary.values)
+        self.messages.sort(by: { (message1, message2) -> Bool in
+            return (message1.timestamp?.intValue)! > (message2.timestamp?.intValue)!
+        })
+        self.timer?.invalidate()
+        self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.handleReload), userInfo: nil, repeats: false)
+        self.tableView.reloadData()
+    }
+    
+    func handleReload() {
+        self.tableView.reloadData()
+    }
+    
+    var timer: Timer?
     var messages = [Message]()
     var messageDictionnary = [String: Message]()
-    
-    func observeMessage() {
-        let ref = FIRDatabase.database().reference().child("messages")
-        ref.observe(.childAdded, with: { (snapshot) in
-            
-            print(snapshot)
-            if let dictionary = snapshot.value as? [String: NSObject] {
-                let message = Message()
-                message.setValuesForKeys(dictionary)
-      //          self.messages.append(message)
-                if let toid = message.toid {
-                    self.messageDictionnary[toid] = message
-                    self.messages = Array(self.messageDictionnary.values)
-                    self.messages.sort(by: { (message1, message2) -> Bool in
-                        return (message1.timestamp?.intValue)! > (message2.timestamp?.intValue)!
-                    })
-                }
-                
-                self.tableView.reloadData()
-                print(message.text)
-            
-            }
-            }, withCancel: nil)
-    }
     
     func handleNewChat() {
         let NewChat = NewMessageController()

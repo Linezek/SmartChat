@@ -14,8 +14,8 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
-       // UITabBar.appearance().backgroundColor = UIColor(red: 55/255, green: 95/255, blue: 162/255, alpha: 1)
-        UITabBar.appearance().tintColor = UIColor(red: 55/255, green: 95/255, blue: 162/255, alpha: 1)
+        UITabBar.appearance().tintColor = UIColor(red: 32/255, green: 66/255, blue: 124/255, alpha: 1)
+        // UITabBar.appearance().backgroundColor = UIColor(red: 55/255, green: 95/255, blue: 162/255, alpha: 1)
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Log out", style: .plain, target: self, action: #selector(handleout))
         let image = UIImage(named: "Plus-1")
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleNewChat))
@@ -90,8 +90,8 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
     
     func handleChat() {
         print(123)
-        let chatLogController = ChatViewController(collectionViewLayout: UICollectionViewFlowLayout())
-        navigationController?.pushViewController(chatLogController, animated: true)
+        let profilViewController = ProfilViewController()
+        navigationController?.pushViewController(profilViewController, animated: true)
     }
     
     func handleout() {

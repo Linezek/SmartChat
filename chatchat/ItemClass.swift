@@ -11,5 +11,6 @@ import UIKit
 class ItemClass: NSObject {
     var title: String?
     var desc: String?
+    var date: String?
     var id: String?
 }

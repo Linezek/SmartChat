@@ -52,7 +52,7 @@ class LoginController: UIViewController {
     
     lazy var profileImageView: UIImageView = {
         let pi = UIImageView()
-        pi.image = UIImage(named: "mytodolist")
+        pi.image = UIImage(named: "Contacts3")
         pi.translatesAutoresizingMaskIntoConstraints = false
         pi.contentMode = .scaleAspectFill
         pi.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handlePickAnImage)))
@@ -73,18 +73,12 @@ class LoginController: UIViewController {
         let sc = UISegmentedControl(items: ["Login", "Register"])
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.tintColor = UIColor.white
-        sc.selectedSegmentIndex = 0
+        sc.selectedSegmentIndex = 1
         sc.addTarget(self, action: #selector(handleLoginRegistrerChange), for: .valueChanged)
         return sc
     }()
     
     func handleLoginRegistrerChange() {
-        let title = loginRegisterSegmentedControl.titleForSegment(at: loginRegisterSegmentedControl.selectedSegmentIndex)
-        loginRegistrerView.setTitle(title, for: UIControlState())
-        inputsContainerViewHeightAcnhor?.constant = loginRegisterSegmentedControl.selectedSegmentIndex == 0 ? 100 : 150
-        
-        nameTextFieldHeightAnchor?.isActive = false
-        nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor, multiplier: loginRegisterSegmentedControl.selectedSegmentIndex == 0 ? 0.0 : 1/3)
         if loginRegisterSegmentedControl.selectedSegmentIndex == 0 {
             nameTextField.placeholder = ""
             nameTextField.text = "";
@@ -93,13 +87,18 @@ class LoginController: UIViewController {
             profileImageView.image = UIImage(named: "Contacts3")
             nameTextField.placeholder = "Name"
         }
+        let title = loginRegisterSegmentedControl.titleForSegment(at: loginRegisterSegmentedControl.selectedSegmentIndex)
+        loginRegistrerView.setTitle(title, for: UIControlState())
+        inputsContainerViewHeightAcnhor?.constant = loginRegisterSegmentedControl.selectedSegmentIndex == 1 ? 150 : 100
+        nameTextFieldHeightAnchor?.isActive = false
+        nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor, multiplier: loginRegisterSegmentedControl.selectedSegmentIndex == 1 ? 1/3 : 0)
         nameTextFieldHeightAnchor?.isActive = true
         emailTextFieldHeightAnchor?.isActive = false
-        emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor, multiplier: loginRegisterSegmentedControl.selectedSegmentIndex == 0 ? 1/2 : 1/3)
+        emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor, multiplier: loginRegisterSegmentedControl.selectedSegmentIndex == 1 ? 1/3 : 1/2)
         emailTextFieldHeightAnchor?.isActive = true
         
         passwordTextFieldHeightAnchor?.isActive = false
-        passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor, multiplier: loginRegisterSegmentedControl.selectedSegmentIndex == 0 ? 1/2 : 1/3)
+        passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor, multiplier: loginRegisterSegmentedControl.selectedSegmentIndex == 1 ? 1/3 : 1/2)
         passwordTextFieldHeightAnchor?.isActive = true
     }
     

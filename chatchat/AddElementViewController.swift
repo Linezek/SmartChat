@@ -19,6 +19,12 @@ class AddElementViewController: UIViewController {
         return title
     }()
     
+    let datepicker: UIDatePicker = {
+       let dp = UIDatePicker()
+        dp.translatesAutoresizingMaskIntoConstraints = false
+       return dp
+    }()
+    
     let DescriptionTextField: UITextField = {
         let title = UITextField()
         title.placeholder = "Description"
@@ -63,10 +69,10 @@ class AddElementViewController: UIViewController {
     func handleSave() {
         let ref = FIRDatabase.database().reference().child("items")
         let childRef = ref.childByAutoId()
-        let values = ["Title": titleTextField.text!, "desc": DescriptionTextField.text!]
+        let values = ["Title": titleTextField.text!, "desc": DescriptionTextField.text!, "date": datepicker.date.description]
         childRef.updateChildValues(values)
-        print(childRef)
         self.dismiss(animated: true, completion: nil)
+             print("MA DATE -> ", datepicker.date.description)
     }
     
     override func viewDidLoad() {
@@ -92,6 +98,7 @@ class AddElementViewController: UIViewController {
         view.addSubview(titleSeparatorView)
         view.addSubview(DescriptionTextField)
         view.addSubview(DescriptionSeparatorView)
+        view.addSubview(datepicker)
 
         titleTextField.leftAnchor.constraint(equalTo: inputContainerView.leftAnchor, constant: 12).isActive = true
         titleTextField.topAnchor.constraint(equalTo: inputContainerView.topAnchor).isActive = true
@@ -114,11 +121,17 @@ class AddElementViewController: UIViewController {
         DescriptionSeparatorView.topAnchor.constraint(equalTo: DescriptionTextField.bottomAnchor).isActive = true
         DescriptionSeparatorView.widthAnchor.constraint(equalTo: inputContainerView.widthAnchor).isActive = true
         DescriptionSeparatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        
+        datepicker.topAnchor.constraint(equalTo: DescriptionSeparatorView.bottomAnchor).isActive = true
+        datepicker.widthAnchor.constraint(equalTo: inputContainerView.widthAnchor).isActive = true
+        datepicker.heightAnchor.constraint(equalToConstant: 150).isActive = true
+        datepicker.bottomAnchor.constraint(equalTo: SaveView.topAnchor).isActive = true
+        
     }
     
     func setupSaveButton() {
         SaveView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        SaveView.topAnchor.constraint(equalTo: DescriptionSeparatorView.bottomAnchor, constant: 0).isActive = true
+        SaveView.topAnchor.constraint(equalTo: datepicker.bottomAnchor, constant: 0).isActive = true
         SaveView.widthAnchor.constraint(equalTo: inputContainerView.widthAnchor).isActive = true
         SaveView.heightAnchor.constraint(equalToConstant: 50).isActive = true
     }

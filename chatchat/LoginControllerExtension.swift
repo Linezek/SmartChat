@@ -91,5 +91,3 @@ extension LoginController: UIImagePickerControllerDelegate, UINavigationControll
         })
     }
 }
-
-

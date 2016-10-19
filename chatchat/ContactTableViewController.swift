@@ -13,6 +13,7 @@ class ContactTableViewController: UITableViewController, UISearchBarDelegate {
     
     let cellId = "cellId"
     var users = [User]()
+    var addElementCell = AddElementCell()
     let searchBar: UISearchBar = {
         let search = UISearchBar()
         search.sizeToFit()
@@ -50,7 +51,7 @@ class ContactTableViewController: UITableViewController, UISearchBarDelegate {
         searchBar.delegate = self
         
         let image = UIImage(named: "SpeechBubble3")
-        tableView.register(UserCellListContact.self, forCellReuseIdentifier: cellId)
+        tableView.register(AddElementCell.self, forCellReuseIdentifier: cellId)
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleNewChat))
         fetchUser()
         observeList()
@@ -61,7 +62,6 @@ class ContactTableViewController: UITableViewController, UISearchBarDelegate {
     func observeList() {
         let ref = FIRDatabase.database().reference().child("items")
         ref.observe(.childAdded, with: { (snapshot) in
-            
             if let dictionary = snapshot.value as? [String: NSObject] {
                 let item = ItemClass()
                 item.id = snapshot.key
@@ -111,11 +111,27 @@ class ContactTableViewController: UITableViewController, UISearchBarDelegate {
     
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! AddElementCell
         let items = allItems[indexPath.row]
         cell.textLabel?.text = items.title
+        let newDate = tranformDateToForm(items: items)
         cell.detailTextLabel?.text = items.desc
+        cell.dateText.text = newDate
         return cell
+    }
+    
+    
+    private func tranformDateToForm(items: ItemClass) -> String {
+        let index1 = items.date?.index((items.date?.endIndex)!, offsetBy: -15)
+        let newDate = items.date?.substring(to: index1!)
+        let index2 = newDate?.index((newDate?.startIndex)!, offsetBy: 5)
+        let finalDate = newDate?.substring(from: index2!)
+        let newString = finalDate?.replacingOccurrences(of: "-", with: "/", options: String.CompareOptions.literal, range: nil)
+        return newString!
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 72
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
