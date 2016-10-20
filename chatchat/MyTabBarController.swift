@@ -16,10 +16,17 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
         self.delegate = self
         UITabBar.appearance().tintColor = UIColor(red: 32/255, green: 66/255, blue: 124/255, alpha: 1)
         // UITabBar.appearance().backgroundColor = UIColor(red: 55/255, green: 95/255, blue: 162/255, alpha: 1)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Log out", style: .plain, target: self, action: #selector(handleout))
-        let image = UIImage(named: "Plus-1")
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleNewChat))
+        let contactsImage = UIImage(named: "Contacts2")
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: contactsImage, style: .plain, target: self, action: #selector(handleContact))
+        let PlusImage = UIImage(named: "Plus-1")
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: PlusImage, style: .plain, target: self, action: #selector(handleNewChat))
         checkIfheUserIsLogged()
+    }
+    
+    func handleContact() {
+        let NewMessageCtrl = NewMessageController()
+        let NewController = UINavigationController(rootViewController: NewMessageCtrl)
+        present(NewController, animated: true, completion: nil)
     }
 
     func handleNewChat() {
@@ -89,7 +96,6 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
     }
     
     func handleChat() {
-        print(123)
         let profilViewController = ProfilViewController()
         navigationController?.pushViewController(profilViewController, animated: true)
     }
@@ -121,17 +127,9 @@ class MyTabBarController: UITabBarController, UITabBarControllerDelegate {
         
         tabTwo.tabBarItem = tabTwoBarItem2
         
-        
-        //Create Tab3
-        
-        let tabThree = NewMessageController()
-        let tabThreeBarItem3 = UITabBarItem(title: "Contact", image: UIImage(named: "Contacts2"), selectedImage: UIImage(named: "Contacts2"))
-        
-        tabThree.tabBarItem = tabThreeBarItem3
-        
-        self.viewControllers = [tabOne, tabTwo, tabThree]
+        self.viewControllers = [tabOne, tabTwo]
     }
-    func tabBarController(tabBarController: UITabBarController, didSelectViewController viewController: UIViewController) {
+    @nonobjc func tabBarController(tabBarController: UITabBarController, didSelectViewController viewController: UIViewController) {
         print("Selected \(viewController.title!)")
     }
 }

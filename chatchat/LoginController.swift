@@ -13,6 +13,7 @@ class LoginController: UIViewController {
     
     var placeholderChance = ""
     var MytabBarController: MyTabBarController?
+    var ProfilViewCtrl: ProfilViewController?
     
     let nameTextField: UITextField = {
         let tf = UITextField()
